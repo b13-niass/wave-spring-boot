@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class WaveSpringBootApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(WaveSpringBootApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(WaveSpringBootApplication.class, args);
+    }
 
 }
