@@ -13,7 +13,6 @@ import com.example.wavespringboot.web.dto.response.RegisterClientResponseDTO;
 import com.example.wavespringboot.web.dto.response.mapper.RegisterClientResponseMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/auth")

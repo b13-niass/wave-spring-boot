@@ -12,8 +12,14 @@ public interface TransactionResponseMapper {
 
     @Mapping(source = "sender.nom", target = "senderName")      // Assumes `User` has a `name` field
     @Mapping(source = "receiver.nom", target = "receiverName")  // Assumes `User` has a `name` field
+    @Mapping(source = "sender.id", target = "senderId")
+    @Mapping(source = "receiver.id", target = "receiverId")
     @Mapping(source = "frais.valeur", target = "fraisValeur")  // Assumes `Frais` has a `montant` field
     TransactionDTOResponse toDTO(Transaction transaction);
+
+    @Mapping(source = "senderId", target = "sender.id")
+    @Mapping(source = "receiverId", target = "receiver.id")
+    Transaction toEntity(TransactionDTOResponse planificationDTOResponse);
 
     List<TransactionDTOResponse> toDTOList(List<Transaction> transactions);
 }

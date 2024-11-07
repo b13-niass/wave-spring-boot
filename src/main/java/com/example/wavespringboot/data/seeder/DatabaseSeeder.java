@@ -66,6 +66,7 @@ public class DatabaseSeeder {
                 .etatCompte(EtatCompteEnum.ACTIF)
                 .dateNaissance(LocalDate.of(1990, 1, 1))
                 .pays(pays)
+                .channel(ChannelEnum.SMS)
                 .build();
         userRepository.save(user1);
 
@@ -146,7 +147,6 @@ public class DatabaseSeeder {
                 .montantEnvoye(1000)
                 .montantRecus(990)
                 .periode(String.valueOf(periodInSeconds))
-                .channel(ChannelEnum.SMS)
                 .sender(sender.get())
                 .receiver(receiver.get())
                 .build();

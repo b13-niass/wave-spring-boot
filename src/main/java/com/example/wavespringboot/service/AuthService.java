@@ -12,4 +12,5 @@ public interface AuthService {
     User registerClient(InscriptionClientDTORequest user);
     RegisterClientResponseDTO verifyCode(VerificationDTORequest verification);
     RegisterClientResponseDTO findUserByTelephone(FindUserDTORequest telephone);
+    User getAuthenticatedUser();
 }

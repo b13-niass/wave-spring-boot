@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
 @AllArgsConstructor
@@ -21,10 +22,10 @@ public class Transaction extends BaseEntity {
     private double montantRecus;
 
     @Enumerated(EnumType.STRING)
-    private EtatTransactionEnum etatTransaction;
+    private EtatTransactionEnum etatTransaction = EtatTransactionEnum.EFFECTUER;
 
     @Enumerated(EnumType.STRING)
-    private TypeTransactionEnum typeTransaction;
+    private TypeTransactionEnum typeTransaction = TypeTransactionEnum.TRANSFERT;
 
     @ManyToOne
     @JoinColumn(name = "sender_id")

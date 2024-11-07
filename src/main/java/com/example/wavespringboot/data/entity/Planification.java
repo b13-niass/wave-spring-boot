@@ -20,9 +20,6 @@ public class Planification extends BaseEntity {
     private double montantRecus;
     private String periode;
 
-    @Enumerated(EnumType.STRING)
-    private ChannelEnum channel;
-
     @ManyToOne
     @JoinColumn(name = "sender_id")
     private User sender;

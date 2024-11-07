@@ -1,5 +1,6 @@
 package com.example.wavespringboot.data.entity;
 
+import com.example.wavespringboot.enums.ChannelEnum;
 import com.example.wavespringboot.enums.EtatCompteEnum;
 import com.example.wavespringboot.enums.RoleEnum;
 import jakarta.persistence.*;
@@ -34,6 +35,9 @@ public class User extends BaseEntity implements UserDetails {
 
     @Column(unique = true)
     private String telephone;
+
+    @Enumerated(EnumType.STRING)
+    private ChannelEnum channel;
 
     @Column(unique = true)
     private String email;

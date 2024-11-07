@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,8 @@ public class AuthServiceImpl implements AuthService {
     private final MessageService mailService;
     private final SecureRandom secureRandom;
     private final RegisterClientResponseMapper registerClientResponseMapper;
+    private final Authentication authentication;
+    ;
 
 
     public AuthServiceImpl(@Qualifier("smsService") MessageService smsService,
@@ -50,6 +54,7 @@ public class AuthServiceImpl implements AuthService {
         this.mailService = mailService;
         this.secureRandom = secureRandom;
         this.registerClientResponseMapper = registerClientResponseMapper;
+        this.authentication = SecurityContextHolder.getContext().getAuthentication();
     }
 
     public String generateUniqueCode() {
@@ -102,6 +107,19 @@ public class AuthServiceImpl implements AuthService {
         }else {
             throw new ClientNotFoundException("Vous n'avez pas encore créé de compte");
         }
+    }
+
+    @Override
+    public User getAuthenticatedUser() {
+        User user = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        if (currentPrincipalName != null){
+            user = userRepository.findByTelephone(currentPrincipalName).orElseThrow(
+                    () -> new ClientNotFoundException("Utilisateur non trouvé")
+            );
+        }
+        return user;
     }
 
 }

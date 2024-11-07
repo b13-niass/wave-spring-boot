@@ -15,5 +15,7 @@ public class TransactionDTOResponse {
     private TypeTransactionEnum typeTransaction;
     private String senderName;
     private String receiverName;
+    private Long senderId;
+    private Long receiverId;
     private Double fraisValeur;  // Nullable if `frais` might not be present
 }
