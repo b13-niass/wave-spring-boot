@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Card</title>
+    <style>
+        /* Set the container to have the dimensions of a credit card */
+        .card {
+            width: 344px;
+            height: 200px;
+            background-image: url('https://res.cloudinary.com/dbq7ldlyx/image/upload/v1730932540/fournisseurs/bvkq2kv5yphj3jfwwnwe.png'); /* Set your background image path here */
+            background-size: cover;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 5;
+        }
+
+        /* QR Code positioning */
+        .qr-code-container {
+            width: 134px;
+            height: 130px;
+            margin-top: 29px;
+            margin-left: 100px;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 10px;
+            z-index: 6;
+        }
+        .qr-code {
+            width: 100%; /* Adjust to fit within container */
+            height: 100%; /* Adjust to fit within container */
+            z-index: 7;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="qr-code-container"  style="margin-top: 29px;
+    margin-left: 100px;">
+        <img src="cid:qrCodeImage" alt="QR Code" class="qr-code">
+    </div>
+</div>
+
+</body>
+</html>
