@@ -4,8 +4,10 @@ import com.example.wavespringboot.data.entity.User;
 import com.example.wavespringboot.service.impl.AuthServiceImpl;
 import com.example.wavespringboot.service.impl.JwtServiceImpl;
 import com.example.wavespringboot.web.controller.AuthController;
+import com.example.wavespringboot.web.dto.request.FindUserDTORequest;
 import com.example.wavespringboot.web.dto.request.InscriptionClientDTORequest;
 import com.example.wavespringboot.web.dto.request.LoginUserDTORequest;
+import com.example.wavespringboot.web.dto.request.VerificationDTORequest;
 import com.example.wavespringboot.web.dto.response.LoginDTOResponse;
 import com.example.wavespringboot.web.dto.response.RegisterClientResponseDTO;
 import com.example.wavespringboot.web.dto.response.mapper.RegisterClientResponseMapper;
@@ -46,5 +48,17 @@ public class AuthControllerImpl implements AuthController {
     public ResponseEntity<RegisterClientResponseDTO> registerClient(@RequestBody @Valid InscriptionClientDTORequest inscription) {
         User user = authenticationService.registerClient(inscription);
         return ResponseEntity.ok(registerClientResponseMapper.toDTO(user));
+    }
+
+    @PostMapping("/find-by-telephone")
+    @Override
+    public ResponseEntity<RegisterClientResponseDTO> findUserByTelephone(FindUserDTORequest findUserDTORequest) {
+        return ResponseEntity.ok(authenticationService.findUserByTelephone(findUserDTORequest));
+    }
+
+    @PostMapping("/verify-code")
+    @Override
+    public ResponseEntity<RegisterClientResponseDTO> verifyCode(VerificationDTORequest verification) {
+        return ResponseEntity.ok(authenticationService.verifyCode(verification));
     }
 }

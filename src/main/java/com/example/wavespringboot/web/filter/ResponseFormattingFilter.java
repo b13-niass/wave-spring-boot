@@ -26,11 +26,14 @@ public class ResponseFormattingFilter implements Filter {
         } else {
             ResponseWrapper responseWrapper = new ResponseWrapper(httpResponse);
 
+            // Process the request through the filter chain
             chain.doFilter(httpRequest, responseWrapper);
 
             String originalResponseBody = responseWrapper.getCaptureAsString();
+            boolean isSuccess = httpResponse.getStatus() < 400;
+            String status = isSuccess ? "OK" : "KO";
 
-            String formattedResponseBody = formatResponse(originalResponseBody);
+            String formattedResponseBody = formatResponse(status, originalResponseBody, isSuccess);
 
             httpResponse.setContentType("application/json");
             PrintWriter out = httpResponse.getWriter();
@@ -51,7 +54,10 @@ public class ResponseFormattingFilter implements Filter {
                 requestURI.startsWith("/api/v1/swagger-resources/");
     }
 
-    private String formatResponse(String originalResponseBody) {
-        return String.format("{ \"status\": \"success\", \"data\": %s }", originalResponseBody);
+    private String formatResponse(String status, String originalResponseBody, boolean isSuccess) {
+        String data = isSuccess ? originalResponseBody : "null";
+        String message = isSuccess ? "Request processed successfully" : originalResponseBody;
+
+        return String.format("{\"status\": \"%s\", \"data\": %s, \"message\": \"%s\"}", status, data, message);
     }
 }

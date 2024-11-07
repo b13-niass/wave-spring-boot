@@ -1,5 +1,7 @@
 package com.example.wavespringboot.exception;
 
+import com.example.wavespringboot.exception.client.ClientNotFoundException;
+import com.example.wavespringboot.exception.client.ClientUnauthorizedException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -13,6 +15,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -39,53 +42,53 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-//    @ExceptionHandler(PromoNotFoundException.class)
-//    public ResponseEntity<String> handlePromoNotFoundException(PromoNotFoundException ex, WebRequest request) {
-//        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
-//    }
+    @ExceptionHandler(ClientNotFoundException.class)
+    public ResponseEntity<String> handlePromoNotFoundException(ClientNotFoundException ex, WebRequest request) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ClientUnauthorizedException.class)
+    public ResponseEntity<String> handlePromoUnauthorizedException(ClientUnauthorizedException ex, WebRequest request) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
 
     @ExceptionHandler(Exception.class)
-    public ProblemDetail handleSecurityException(Exception exception) {
-        ProblemDetail errorDetail = null;
+    public ResponseEntity<String> handleSecurityException(Exception exception) {
+        String errorMessage;
 
-        // TODO send this stack trace to an observability tool
+        // Log or send the exception details to an observability tool, if needed
         exception.printStackTrace();
 
+        // Customize error message and status based on the exception type
         if (exception instanceof BadCredentialsException) {
-            errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(401), exception.getMessage());
-            errorDetail.setProperty("description", "The username or password is incorrect");
-
-            return errorDetail;
+            errorMessage = "The username or password is incorrect";
+            return new ResponseEntity<>(errorMessage, HttpStatus.UNAUTHORIZED);
         }
 
         if (exception instanceof AccountStatusException) {
-            errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403), exception.getMessage());
-            errorDetail.setProperty("description", "The account is locked");
+            errorMessage = "The account is locked or disabled";
+            return new ResponseEntity<>(errorMessage, HttpStatus.FORBIDDEN);
         }
 
         if (exception instanceof AccessDeniedException) {
-            errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403), exception.getMessage());
-            errorDetail.setProperty("description", "You are not authorized to access this resource");
+            errorMessage = "You are not authorized to access this resource";
+            return new ResponseEntity<>(errorMessage, HttpStatus.FORBIDDEN);
         }
 
         if (exception instanceof SignatureException) {
-            errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403), exception.getMessage());
-            errorDetail.setProperty("description", "The JWT signature is invalid");
+            errorMessage = "The JWT signature is invalid";
+            return new ResponseEntity<>(errorMessage, HttpStatus.FORBIDDEN);
         }
 
         if (exception instanceof ExpiredJwtException) {
-            errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403), exception.getMessage());
-            errorDetail.setProperty("description", "The JWT token has expired");
+            errorMessage = "The JWT token has expired";
+            return new ResponseEntity<>(errorMessage, HttpStatus.FORBIDDEN);
         }
 
-        if (errorDetail == null) {
-            errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), exception.getMessage());
-            errorDetail.setProperty("description", "Unknown internal server error.");
-        }
-
-        return errorDetail;
+        // Fallback for other exceptions
+        errorMessage = "Unknown internal server error.";
+        return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException ex) {
         return new ResponseEntity<>("Accès refusé : Vous n'avez pas l'autorisation d'accéder à cette ressource.", HttpStatus.FORBIDDEN);
