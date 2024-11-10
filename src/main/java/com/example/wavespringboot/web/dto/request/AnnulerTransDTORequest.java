@@ -6,7 +6,6 @@ import lombok.Builder;
 
 @Builder(toBuilder = true)
 public record AnnulerTransDTORequest(
-       @IfExistUserAnnotation
        @Positive(message = "L'id doit etre un nombre positif")
         Long idTransaction
 ) {

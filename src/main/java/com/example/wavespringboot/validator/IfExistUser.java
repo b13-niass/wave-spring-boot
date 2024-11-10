@@ -7,7 +7,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class IfExistUser implements ConstraintValidator<IfExistUserAnnotation, Long> {
+public class IfExistUser implements ConstraintValidator<IfExistUserAnnotation, String> {
 
     private final UserRepository userRepository;
 
@@ -21,10 +21,10 @@ public class IfExistUser implements ConstraintValidator<IfExistUserAnnotation, L
     }
 
     @Override
-    public boolean isValid(Long id, ConstraintValidatorContext context) {
-        if (id == null) {
+    public boolean isValid(String telephone, ConstraintValidatorContext context) {
+        if (telephone == null) {
             return false;
         }
-        return userRepository.existsById(id);
+        return userRepository.existsByTelephone(telephone);
     }
 }

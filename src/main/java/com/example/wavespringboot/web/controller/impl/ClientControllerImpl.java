@@ -6,6 +6,7 @@ import com.example.wavespringboot.web.dto.request.AnnulerTransDTORequest;
 import com.example.wavespringboot.web.dto.request.FavorisDTORequest;
 import com.example.wavespringboot.web.dto.request.MultipleTransfertDTORequest;
 import com.example.wavespringboot.web.dto.request.TransfertDTORequest;
+import com.example.wavespringboot.web.dto.response.AccueilDTOResponse;
 import com.example.wavespringboot.web.dto.response.FavorisDTOResponse;
 import com.example.wavespringboot.web.dto.response.TransactionDTOResponse;
 import com.example.wavespringboot.web.dto.response.UserDTOResponse;
@@ -24,7 +25,7 @@ public class ClientControllerImpl implements ClientController {
 
     @GetMapping("/accueil")
     @Override
-    public ResponseEntity<UserDTOResponse> accueil() {
+    public ResponseEntity<AccueilDTOResponse> accueil() {
         return ResponseEntity.ok(clientService.accueil());
     }
 
@@ -57,5 +58,4 @@ public class ClientControllerImpl implements ClientController {
     public ResponseEntity<TransactionDTOResponse> annulerTransaction(@RequestBody @Valid AnnulerTransDTORequest annulerTransDTORequest) {
         return ResponseEntity.ok(clientService.annulerTransaction(annulerTransDTORequest));
     }
-
 }

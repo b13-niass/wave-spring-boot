@@ -15,6 +15,7 @@ public interface TransactionResponseMapper {
     @Mapping(source = "sender.id", target = "senderId")
     @Mapping(source = "receiver.id", target = "receiverId")
     @Mapping(source = "frais.valeur", target = "fraisValeur")  // Assumes `Frais` has a `montant` field
+    @Mapping(source = "createdAt", target = "createdAt")
     TransactionDTOResponse toDTO(Transaction transaction);
 
     @Mapping(source = "senderId", target = "sender.id")

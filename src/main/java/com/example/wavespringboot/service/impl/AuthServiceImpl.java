@@ -1,7 +1,11 @@
 package com.example.wavespringboot.service.impl;
 
 import com.example.wavespringboot.data.entity.User;
+import com.example.wavespringboot.data.entity.Wallet;
 import com.example.wavespringboot.data.repository.UserRepository;
+import com.example.wavespringboot.data.repository.WalletRepository;
+import com.example.wavespringboot.enums.EtatCompteEnum;
+import com.example.wavespringboot.enums.RoleEnum;
 import com.example.wavespringboot.exception.client.ClientNotFoundException;
 import com.example.wavespringboot.service.AuthService;
 import com.example.wavespringboot.service.MessageService;
@@ -35,6 +39,7 @@ public class AuthServiceImpl implements AuthService {
     private final SecureRandom secureRandom;
     private final RegisterClientResponseMapper registerClientResponseMapper;
     private final Authentication authentication;
+    private final WalletRepository walletRepository;
     ;
 
 
@@ -45,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
                            UserRepository userRepository,
                            InscriptionClientDTOMapper inscriptionClientDTOMapper,
                            SecureRandom secureRandom,
-                           RegisterClientResponseMapper registerClientResponseMapper) {
+                           RegisterClientResponseMapper registerClientResponseMapper, WalletRepository walletRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.inscriptionClientDTOMapper = inscriptionClientDTOMapper;
@@ -55,10 +60,11 @@ public class AuthServiceImpl implements AuthService {
         this.secureRandom = secureRandom;
         this.registerClientResponseMapper = registerClientResponseMapper;
         this.authentication = SecurityContextHolder.getContext().getAuthentication();
+        this.walletRepository = walletRepository;
     }
 
     public String generateUniqueCode() {
-        int code = 100000 + secureRandom.nextInt(900000); // Génère un nombre entre 100000 et 999999
+        int code = 1000 + secureRandom.nextInt(9000); // Génère un nombre entre 100000 et 999999
         return String.valueOf(code);
     }
 
@@ -80,9 +86,16 @@ public class AuthServiceImpl implements AuthService {
             User user = this.inscriptionClientDTOMapper.toEntity(inscription);
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setCodeVerification(generateUniqueCode());
-            smsService.sendMessage(user.getTelephone(), "Votre code de verification est : " + user.getCodeVerification());
+            user.setEtatCompte(EtatCompteEnum.ACTIF);
+            user.setRole(RoleEnum.CLIENT);
+//            smsService.sendMessage(user.getTelephone(), "Votre code de verification est : " + user.getCodeVerification());
             mailService.sendMailWithThymeleafAndQRCode(user.getEmail(), "Bienvenue sur Wave Mobile", user.getTelephone());
-            return this.userRepository.save(user);
+            user = this.userRepository.save(user);
+
+            Wallet wallet = Wallet.builder().user(user).solde(0).plafond(200000).build();
+            wallet = walletRepository.save(wallet);
+
+            return user;
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -93,6 +106,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userRepository.findByCodeVerification(verification.code()).orElse(null);
         if (user!= null) {
+
             return registerClientResponseMapper.toDTO(user);
         }else {
             throw new ClientNotFoundException("Le Code de verification est incorrecte");
@@ -101,8 +115,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public RegisterClientResponseDTO findUserByTelephone(FindUserDTORequest findUserDTORequest) {
+        System.out.println(findUserDTORequest.telephone());
         User user = userRepository.findByTelephone(findUserDTORequest.telephone()).orElse(null);
         if (user!= null) {
+            user.setCodeVerification(generateUniqueCode());
+//            smsService.sendMessage(user.getTelephone(), "Votre code de verification est : " + user.getCodeVerification());
+            userRepository.save(user);
             return registerClientResponseMapper.toDTO(user);
         }else {
             throw new ClientNotFoundException("Vous n'avez pas encore créé de compte");

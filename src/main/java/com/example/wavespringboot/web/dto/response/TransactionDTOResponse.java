@@ -5,6 +5,8 @@ import com.example.wavespringboot.enums.TypeTransactionEnum;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder(toBuilder = true)
 public class TransactionDTOResponse {
@@ -18,4 +20,6 @@ public class TransactionDTOResponse {
     private Long senderId;
     private Long receiverId;
     private Double fraisValeur;  // Nullable if `frais` might not be present
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

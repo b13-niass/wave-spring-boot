@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 public interface ClientService {
-    UserDTOResponse accueil();
+    AccueilDTOResponse accueil();
     Collection<FavorisDTOResponse> getFavoris();
     FavorisDTOResponse addFavoris(FavorisDTORequest favorisDTORequest);
     Collection<TransactionDTOResponse> transfert(MultipleTransfertDTORequest transferts);

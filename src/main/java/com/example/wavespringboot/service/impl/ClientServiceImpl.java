@@ -13,11 +13,12 @@ import com.example.wavespringboot.exception.client.ClientSoldeInsuffisantExcepti
 import com.example.wavespringboot.service.AuthService;
 import com.example.wavespringboot.service.ClientService;
 import com.example.wavespringboot.service.QRCodeGenerator;
-import com.example.wavespringboot.web.dto.mapper.TransfertDTOMapper;
 import com.example.wavespringboot.web.dto.request.AnnulerTransDTORequest;
 import com.example.wavespringboot.web.dto.request.FavorisDTORequest;
 import com.example.wavespringboot.web.dto.request.MultipleTransfertDTORequest;
 import com.example.wavespringboot.web.dto.request.TransfertDTORequest;
+import com.example.wavespringboot.web.dto.request.mapper.TransfertDTOMapper;
+import com.example.wavespringboot.web.dto.response.AccueilDTOResponse;
 import com.example.wavespringboot.web.dto.response.FavorisDTOResponse;
 import com.example.wavespringboot.web.dto.response.TransactionDTOResponse;
 import com.example.wavespringboot.web.dto.response.UserDTOResponse;
@@ -53,17 +54,23 @@ public class ClientServiceImpl implements ClientService {
     private final FavorisRepository favorisRepository;
     private final WalletRepository walletRepository;
 
+
     @Override
-    public UserDTOResponse accueil() {
+    public AccueilDTOResponse accueil() {
        User user = authService.getAuthenticatedUser();
         UserDTOResponse userDTOResponse = userResponseMapper.toDTO(user);
         userDTOResponse.setTransactions(
                 Stream.concat(
                         transactionResponseMapper.toDTOList(user.getSentTransactions()).stream(),
                         transactionResponseMapper.toDTOList(user.getReceivedTransactions()).stream()
-                        ).collect(Collectors.toList())
+                        ).sorted((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()))  // Compare in reverse order
+                        .collect(Collectors.toList())
         );
-        return userDTOResponse;
+        String qrCodeBase64 = this.qrCodeGenerator.getQRCodeImageBase64(user.getTelephone(), 250, 250);
+        return AccueilDTOResponse.builder()
+                .user(userDTOResponse)
+                .qrCode(qrCodeBase64)
+                .build();
     }
 
     @Override
@@ -103,18 +110,17 @@ public class ClientServiceImpl implements ClientService {
                     throw new ClientSoldeInsuffisantException("Solde insuffisant");
                 }
 
-                User receiver = userRepository.findById(transaction.getReceiver().getId())
+                User receiver = userRepository.findByTelephone(transaction.getReceiver().getTelephone())
                         .orElseThrow(() -> new ClientNotFoundException("Destinataire introuvable"));
+                transaction.setReceiver(receiver);
 
                 sender.getWallet().setSolde(sender.getWallet().getSolde() - transaction.getMontantEnvoye());
-
                 receiver.getWallet().setSolde(receiver.getWallet().getSolde() + transaction.getMontantRecus());
-
-                transaction = transactionRepository.save(transaction);
-                System.out.println("Transfert simple");
 
                 walletRepository.save(sender.getWallet());
                 walletRepository.save(receiver.getWallet());
+
+                transaction = transactionRepository.save(transaction);
 
                 return Collections.singletonList(transactionResponseMapper.toDTO(transaction));
 
@@ -123,6 +129,7 @@ public class ClientServiceImpl implements ClientService {
             } catch (Exception e) {
                 throw new RuntimeException("Une erreur inattendue s'est produite", e);
             }
+
         } else if (transferts.transferts().size() > 1) {
             try {
                 List<Transaction> transactions = transferts.transferts().stream()
@@ -144,17 +151,23 @@ public class ClientServiceImpl implements ClientService {
                 }
 
                 for (Transaction transaction : transactions) {
-                    User receiver = userRepository.findById(transaction.getReceiver().getId())
+                    // Fetch the receiver from the database
+                    User receiver = userRepository.findByTelephone(transaction.getReceiver().getTelephone())
                             .orElseThrow(() -> new ClientNotFoundException("Destinataire introuvable"));
 
+                    // Set the fully managed receiver instance to the transaction
+                    transaction.setReceiver(receiver);
+
+                    // Update sender and receiver wallet balances
                     sender.getWallet().setSolde(sender.getWallet().getSolde() - transaction.getMontantEnvoye());
                     receiver.getWallet().setSolde(receiver.getWallet().getSolde() + transaction.getMontantRecus());
 
-                    walletRepository.save(receiver.getWallet());
+                    walletRepository.save(receiver.getWallet());  // Save the updated receiver wallet
                 }
 
+                // Save all transactions at once
                 transactions = transactionRepository.saveAll(transactions);
-                walletRepository.save(sender.getWallet());
+                walletRepository.save(sender.getWallet());  // Save the updated sender wallet
 
                 return transactionResponseMapper.toDTOList(transactions);
 
@@ -163,6 +176,7 @@ public class ClientServiceImpl implements ClientService {
             } catch (Exception e) {
                 throw new ClientInternalServerException("Erreur lors du transfert");
             }
+
         } else {
             return Collections.emptyList();
         }

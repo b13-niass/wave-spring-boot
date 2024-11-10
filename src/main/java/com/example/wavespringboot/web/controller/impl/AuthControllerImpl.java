@@ -32,7 +32,7 @@ public class AuthControllerImpl implements AuthController {
 
     @PostMapping("/login")
     @Override
-    public ResponseEntity<LoginDTOResponse> authenticate(@RequestBody LoginUserDTORequest loginUserDto) {
+    public ResponseEntity<LoginDTOResponse> authenticate(@RequestBody @Valid LoginUserDTORequest loginUserDto) {
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
 
         String jwtToken = jwtService.generateToken(authenticatedUser);
@@ -51,13 +51,13 @@ public class AuthControllerImpl implements AuthController {
 
     @PostMapping("/find-by-telephone")
     @Override
-    public ResponseEntity<RegisterClientResponseDTO> findUserByTelephone(FindUserDTORequest findUserDTORequest) {
+    public ResponseEntity<RegisterClientResponseDTO> findUserByTelephone(@RequestBody @Valid FindUserDTORequest findUserDTORequest) {
         return ResponseEntity.ok(authenticationService.findUserByTelephone(findUserDTORequest));
     }
 
     @PostMapping("/verify-code")
     @Override
-    public ResponseEntity<RegisterClientResponseDTO> verifyCode(VerificationDTORequest verification) {
+    public ResponseEntity<RegisterClientResponseDTO> verifyCode(@RequestBody @Valid VerificationDTORequest verification) {
         return ResponseEntity.ok(authenticationService.verifyCode(verification));
     }
 }

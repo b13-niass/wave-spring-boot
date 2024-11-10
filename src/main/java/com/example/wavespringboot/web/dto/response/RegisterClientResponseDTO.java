@@ -8,4 +8,6 @@ import lombok.Data;
 public class RegisterClientResponseDTO {
     private String telephone;
     private String email;
+    private String nom;
+    private String prenom;
 }
