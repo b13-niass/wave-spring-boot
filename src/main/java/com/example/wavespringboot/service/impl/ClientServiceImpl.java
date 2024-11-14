@@ -1,9 +1,6 @@
 package com.example.wavespringboot.service.impl;
 
-import com.example.wavespringboot.data.entity.Favoris;
-import com.example.wavespringboot.data.entity.Frais;
-import com.example.wavespringboot.data.entity.Transaction;
-import com.example.wavespringboot.data.entity.User;
+import com.example.wavespringboot.data.entity.*;
 import com.example.wavespringboot.data.repository.*;
 import com.example.wavespringboot.enums.EtatTransactionEnum;
 import com.example.wavespringboot.enums.TypeTransactionEnum;
@@ -13,26 +10,21 @@ import com.example.wavespringboot.exception.client.ClientSoldeInsuffisantExcepti
 import com.example.wavespringboot.service.AuthService;
 import com.example.wavespringboot.service.ClientService;
 import com.example.wavespringboot.service.QRCodeGenerator;
-import com.example.wavespringboot.web.dto.request.AnnulerTransDTORequest;
-import com.example.wavespringboot.web.dto.request.FavorisDTORequest;
-import com.example.wavespringboot.web.dto.request.MultipleTransfertDTORequest;
-import com.example.wavespringboot.web.dto.request.TransfertDTORequest;
+import com.example.wavespringboot.web.dto.request.*;
 import com.example.wavespringboot.web.dto.request.mapper.TransfertDTOMapper;
-import com.example.wavespringboot.web.dto.response.AccueilDTOResponse;
-import com.example.wavespringboot.web.dto.response.FavorisDTOResponse;
-import com.example.wavespringboot.web.dto.response.TransactionDTOResponse;
-import com.example.wavespringboot.web.dto.response.UserDTOResponse;
-import com.example.wavespringboot.web.dto.response.mapper.FavorisResponseMapper;
-import com.example.wavespringboot.web.dto.response.mapper.TransactionResponseMapper;
-import com.example.wavespringboot.web.dto.response.mapper.UserResponseMapper;
-import com.example.wavespringboot.web.dto.response.mapper.WalletResponseMapper;
+import com.example.wavespringboot.web.dto.response.*;
+import com.example.wavespringboot.web.dto.response.mapper.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Time;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,6 +45,8 @@ public class ClientServiceImpl implements ClientService {
     private final FraisRepository fraisRepository;
     private final FavorisRepository favorisRepository;
     private final WalletRepository walletRepository;
+    private final PlanificationRepository planificationRepository;
+    private final PlanificationResponseMapper planificationResponseMapper;
 
 
     @Override
@@ -258,6 +252,55 @@ public class ClientServiceImpl implements ClientService {
         Transaction updatedTransaction = transactionRepository.save(transaction);
 
         return transactionResponseMapper.toDTO(updatedTransaction);
+    }
+
+    @Override
+    public PlanificationDTOResponse planification(PlanificationDTORequest planificationDTORequest) {
+        User user = authService.getAuthenticatedUser();
+
+        User receiver = userRepository.findByTelephone(planificationDTORequest.telephone()).orElseThrow(() -> new ClientNotFoundException("Destinataire introuvable"));
+        Planification planification = Planification.builder()
+                .recurrenceType(planificationDTORequest.recurrenceType())
+                .montant(planificationDTORequest.montant())
+                .dayOfMonth(planificationDTORequest.dayOfMonth())
+                .daysOfWeek(planificationDTORequest.daysOfWeek())
+                .sender(user)
+                .receiver(receiver)
+                .build();
+        if (planificationDTORequest.timeOfDay() != null) {
+            System.out.println(planificationDTORequest.timeOfDay());
+            try {
+                String timeOfDay = planificationDTORequest.timeOfDay();
+                if (timeOfDay.length() == 5) { // Format "HH:mm"
+                    timeOfDay += ":00"; // Pad with ":00" to match "HH:mm:ss"
+                }
+                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+                Date date = sdf.parse(timeOfDay);
+                Time time = new Time(date.getTime());
+                planification.setTimeOfDay(time);
+            } catch (ParseException e) {
+                throw new RuntimeException("Format de la date et de l'heure incorrect", e);
+            }
+        }
+        planification = planificationRepository.save(planification);
+
+        return planificationResponseMapper.toDTO(planification);
+    }
+
+    @Override
+    public boolean annulerPlanification(AnnulerPlanifDTORequest annulerPlanifDTORequest) {
+        Planification planification = planificationRepository.findById(annulerPlanifDTORequest.id()).orElseThrow(
+                () -> new ClientNotFoundException("Planification introuvable")
+        );
+        planificationRepository.delete(planification);
+        return true;
+    }
+
+    @Override
+    public List<PlanificationDTOResponse> getPlanifications() {
+        User user = authService.getAuthenticatedUser();
+        List<Planification> planifications = planificationRepository.findBySenderId(user.getId());
+       return planificationResponseMapper.toDTOList(planifications);
     }
 
 

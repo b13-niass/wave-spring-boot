@@ -12,12 +12,16 @@ public interface PlanificationResponseMapper {
 
     @Mapping(source = "sender.id", target = "senderId")
     @Mapping(source = "receiver.id", target = "receiverId")
-    PlanificationDTOResponse toDTO(Planification planification);
+    @Mapping(source = "receiver.telephone", target = "receiverTelephone")
+    @Mapping(source = "sender.telephone", target = "senderTelephone")
+PlanificationDTOResponse toDTO(Planification planification);
 
     List<PlanificationDTOResponse> toDTOList(List<Planification> planifications);
 
     // Optional: For mapping DTO to entity if needed
     @Mapping(source = "senderId", target = "sender.id")
     @Mapping(source = "receiverId", target = "receiver.id")
-    Planification toEntity(PlanificationDTOResponse planificationDTOResponse);
+    @Mapping(source = "receiverTelephone", target = "receiver.telephone")
+    @Mapping(source = "senderTelephone", target = "sender.telephone")
+ Planification toEntity(PlanificationDTOResponse planificationDTOResponse);
 }

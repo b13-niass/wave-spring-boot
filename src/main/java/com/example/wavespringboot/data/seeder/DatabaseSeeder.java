@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
@@ -36,11 +38,11 @@ public class DatabaseSeeder {
     @PostConstruct
     public void seedDatabase() {
         if (seederEnabled) {
-            seedPays();
-            seedUsersAndWallets();
-            seedFavoris();
-            seedFrais();
-            seedTransactions();
+//            seedPays();
+//            seedUsersAndWallets();
+//            seedFavoris();
+//            seedFrais();
+//            seedTransactions();
             seedPlanifications();
         }
     }
@@ -135,21 +137,31 @@ public class DatabaseSeeder {
         transactionRepository.save(transaction);
     }
 
-    private void seedPlanifications() {
-        Optional<User> sender = userRepository.findByTelephone("+221771234567");
-        Optional<User> receiver = userRepository.findByTelephone("+221781234567");
+    public void seedPlanifications() {
+        Optional<User> sender = userRepository.findByTelephone("+221767819339");
+        Optional<User> receiver = userRepository.findByTelephone("+221783682009");
 
-        LocalDate today = LocalDate.now();
-        LocalDate plannedDate = today.plusDays(30); // Example: Planned for 30 days from today
-        long periodInSeconds = ChronoUnit.SECONDS.between(today.atStartOfDay(), plannedDate.atStartOfDay());
+        if (sender.isPresent() && receiver.isPresent()) {
+            RecurrenceType recurrenceType = RecurrenceType.DAILY;
 
-        Planification planification = Planification.builder()
-                .montantEnvoye(1000)
-                .montantRecus(990)
-                .periode(String.valueOf(periodInSeconds))
-                .sender(sender.get())
-                .receiver(receiver.get())
-                .build();
-        planificationRepository.save(planification);
+            Time timeOfDay = Time.valueOf(LocalTime.of(10, 0));
+            String daysOfWeek = "Mon,Wed,Fri";
+            Integer dayOfMonth = 15;
+
+            Planification planification = Planification.builder()
+                    .montant(1000)
+                    .recurrenceType(recurrenceType)
+                    .timeOfDay(timeOfDay)
+                    .daysOfWeek(recurrenceType == RecurrenceType.WEEKLY ? daysOfWeek : null)
+                    .dayOfMonth(recurrenceType == RecurrenceType.MONTHLY ? dayOfMonth : null)
+                    .sender(sender.get())
+                    .receiver(receiver.get())
+                    .build();
+
+            planificationRepository.save(planification);
+            System.out.println("Planification seeded successfully.");
+        } else {
+            System.out.println("Sender or receiver not found.");
+        }
     }
 }

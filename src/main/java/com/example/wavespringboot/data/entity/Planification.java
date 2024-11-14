@@ -1,8 +1,11 @@
 package com.example.wavespringboot.data.entity;
 
 import com.example.wavespringboot.enums.ChannelEnum;
+import com.example.wavespringboot.enums.RecurrenceType;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.sql.Time;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,11 +19,23 @@ public class Planification extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private double montantEnvoye;
-    private double montantRecus;
-    private String periode;
+    @Column(name = "montant", nullable = false)
+    private double montant;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "recurrence_type", length = 10)
+    private RecurrenceType recurrenceType;
+
+    @Column(name = "time_of_day")
+    private Time timeOfDay;
+
+    @Column(name = "days_of_week", length = 20)
+    private String daysOfWeek;
+
+    @Column(name = "day_of_month")
+    private Integer dayOfMonth;
     @ManyToOne
+
     @JoinColumn(name = "sender_id")
     private User sender;
 

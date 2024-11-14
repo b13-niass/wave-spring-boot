@@ -88,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
             user.setCodeVerification(generateUniqueCode());
             user.setEtatCompte(EtatCompteEnum.ACTIF);
             user.setRole(RoleEnum.CLIENT);
-//            smsService.sendMessage(user.getTelephone(), "Votre code de verification est : " + user.getCodeVerification());
+//            smsService.sendMessage(user.getTelephone(),"Votre code de verification est : " + user.getCodeVerification());
             mailService.sendMailWithThymeleafAndQRCode(user.getEmail(), "Bienvenue sur Wave Mobile", user.getTelephone());
             user = this.userRepository.save(user);
 
